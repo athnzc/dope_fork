@@ -42,3 +42,7 @@ platform running Ubuntu 18.04 or later.  Further, use of the DOPE Docker contain
    Return to step 7 of the [installation instructions](../readme.md) (downloading the weights).
 
    *Note:* Since the Docker container binds directly to the host's network, it will see `roscore` even if running outside the docker container.
+
+### Updates
+- **19/10/2023**: Pytorch 1.6 yielded `RuntimeError: CUDA error: invalid device function`. Updated Pytorch from 1.6.0 to 2.1.0 to be compatible with newer graphics cards 
+`scripts/train2/out_experiment` contains sample output from running inference on object "Mustard" from the [HOPE dataset](https://github.com/swtyree/hope-dataset)
