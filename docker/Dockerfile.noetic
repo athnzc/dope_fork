@@ -43,9 +43,17 @@ RUN apt-get update && apt-get -y --no-install-recommends install \
   && apt-get clean
 
 # pip install required Python packages
-COPY requirements.txt ${HOME}
-RUN python3 -m pip install --no-cache-dir -r ${HOME}/requirements.txt
+#COPY requirements.txt ${HOME}
+#RUN python3 -m pip install --no-cache-dir -r ${HOME}/requirements.txt
+RUN python3 -m pip install pyrr==0.10.3 \
+numpy==1.17.4 \
+scipy==1.5.2 \
+opencv_python==4.4.0.44 \
+Pillow==8.1.1 \
+configparser==5.0.0 
 
+RUN python3 -m pip install torch torchvision
+RUN simplejson
 # Setup catkin workspace
 ENV CATKIN_WS ${HOME}/catkin_ws
 COPY . ${CATKIN_WS}/src/dope
