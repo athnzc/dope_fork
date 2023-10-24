@@ -15,7 +15,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from PIL import ImageDraw
-
+import os 
 import sys 
 sys.path.append("inference")
 from cuboid import Cuboid3d
@@ -340,6 +340,9 @@ if __name__ == "__main__":
     imgs = []
     imgsname = []
 
+    if not os.path.exists(os.path.join(opt.data)):
+        print("Path", opt.data, "doesn't exist")
+        exit()
     if not opt.data is None:
         videopath = opt.data
         for j in sorted(glob.glob(videopath+"/*.png")):
