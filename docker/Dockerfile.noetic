@@ -50,10 +50,12 @@ numpy==1.17.4 \
 scipy==1.5.2 \
 opencv_python==4.4.0.44 \
 Pillow==8.1.1 \
-configparser==5.0.0 
+configparser==5.0.0 \
+natsort \
+absl-py
 
 RUN python3 -m pip install torch torchvision
-RUN simplejson
+RUN python3 -m pip install simplejson
 # Setup catkin workspace
 ENV CATKIN_WS ${HOME}/catkin_ws
 COPY . ${CATKIN_WS}/src/dope
@@ -67,3 +69,5 @@ ENV NVIDIA_DRIVER_CAPABILITIES graphics,utility,compute
 ENV TERM=xterm
 # Some QT-Apps don't show controls without this
 ENV QT_X11_NO_MITSHM 1
+
+ENV DOPE_ROOT ${HOME}/catkin_ws/src/dope
