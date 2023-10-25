@@ -56,6 +56,8 @@ absl-py
 
 RUN python3 -m pip install torch torchvision
 RUN python3 -m pip install simplejson
+RUN python3 -m pip install tensorboardX opencv_python_headless==4.4.0.44 albumentations
+RUN python3 -m pip install --upgrade numpy
 # Setup catkin workspace
 ENV CATKIN_WS ${HOME}/catkin_ws
 COPY . ${CATKIN_WS}/src/dope

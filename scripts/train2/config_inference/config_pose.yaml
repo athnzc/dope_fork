@@ -6,11 +6,11 @@ downscale_height: 400      # if the input image is larger than this, scale it do
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
-    # "cracker":"package://dope/weights/cracker_60.pth",
+     #"cracker": "/root/catkin_ws/src/dope/weights/cracker_60.pth",
     # "gelatin":"package://dope/weights/gelatin_60.pth",
     # "meat":"package://dope/weights/meat_20.pth",
     # "mustard":"package://dope/weights/mustard_60.pth",
-    # "soup":"package://dope/weights/soup_60.pth",
+    # "soup": "/root/catkin_ws/src/dope/weights/soup_60.pth",
     # 'peg_hole': "package://dope/weights/peg_box_40.pth",
     # 'cube_red': "package://dope/weights/red_40.pth",
     #"sugar":"package://dope/weights/sugar_60.pth"
@@ -19,6 +19,7 @@ weights: {
     # 'pudding':"weights_dope/dope_network/net_epoch_60.pth"
     #'alphabet_soup':"weights_dope/resnet_simple/alphabe_soup.pth"
     "Mustard": "/root/catkin_ws/src/dope/weights/Mustard.pth",
+    #"meat": "/root/catkin_ws/src/dope/weights/net_meat_shiny_14.pth"
 }
 
 # Type of neural network architecture
@@ -26,6 +27,9 @@ architectures: {
     'pudding':"dope",
     'alphabet_soup':'resnet_simple',  
     'Mustard': "dope",
+    'cracker': "dope",
+    'soup': "dope",
+    "meat": "dope", 
 }
 
 

@@ -478,10 +478,15 @@ class ObjectDetector(object):
         
         # print(all_peaks)
 
-        #print("find_object_poses:  found {} objects ================".format(len(objects)))
+        print("find_object_poses:  found {} objects ================".format(len(objects)))
         for obj in objects:
             # Run PNP
+            #print(obj)
             points = obj[1] + [(obj[0][0]*scale_factor, obj[0][1]*scale_factor)]
+            # for p in points:
+            #     print(len(p))
+            # print(len(points))
+            print(points)
             cuboid2d = np.copy(points)
             location, quaternion, projected_points = pnp_solver.solve_pnp(points)
 
@@ -753,6 +758,7 @@ class ObjectDetector(object):
                             or best_angle < config.thresh_angle \
                             and best_dist < objects[i_best][2][i_lists][1]:
                         # set the points 
+                        #print('in find_objects', objects)
                         objects[i_best][1][i_lists] = ((candidate[0])*scale_factor, (candidate[1])*scale_factor)
                         # set information about the points: angle and distance
                         objects[i_best][2][i_lists] = (best_angle, best_dist)

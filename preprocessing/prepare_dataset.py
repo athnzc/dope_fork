@@ -14,7 +14,7 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string('data_folder', None, 'Folder with scene subfolders.')
 flags.DEFINE_string('output_folder', None, 'Folder with unified dataset. If not specified, a default output folder is created in the directory the script is invoked')
-flags.DEFINE_boolean('train', False, 'Whether you want to create a train or a test set. A test set won\'nt include depth images')
+flags.DEFINE_boolean('train', False, 'Whether you want to create a train or a test set. A test set won\'t include depth images')
 flags.DEFINE_spaceseplist('scenes', None, 'Space-separated list of which scenes you want to process. Default will process all scenes')
 flags.DEFINE_integer('digits', 4, '')
 
@@ -75,7 +75,10 @@ def main(argv):
 
         for idx, image in enumerate(rgb_img):
             new_basename = (FLAGS.digits - len(str(count)))*'0'+str(count)
-            new_rgb_name = os.path.join(FLAGS.output_folder, new_basename+"_rgb.png")
+            if FLAGS.train:
+                new_rgb_name = os.path.join(FLAGS.output_folder, new_basename+".png")
+            else:
+                new_rgb_name = os.path.join(FLAGS.output_folder, new_basename+"_rgb.png")
 
             if os.path.splitext(image)[-1].split('.')[-1] not in ['png']: # if image extension is not png
                 convert_to_png(image, new_rgb_name)
@@ -84,7 +87,7 @@ def main(argv):
                 logging.info('Copying rgb image '+image+' to '+new_rgb_name)
                 shutil.copy(image, new_rgb_name)
             
-            if len(depth_img) > 0 and FLAGS.train:
+            if len(depth_img) > 0 and not FLAGS.train:
                 new_depth_name = os.path.join(FLAGS.output_folder, new_basename+"_depth.png")
                 d_img = depth_img[idx]
 
