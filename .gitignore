@@ -10,6 +10,6 @@ venv
 google_scanned_models/
 scripts/nvisii_data_gen/output/dataset/
 /datasets
-scripts/train2/out_experiment
-preprocessing/output
-outputs
+/scripts/train2/out_experiment
+/preprocessing/output
+/outputs
