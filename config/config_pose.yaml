@@ -8,8 +8,8 @@ downscale_height: 400      # if the input image is larger than this, scale it do
 weights: {
     # "cracker":"package://dope/weights/cracker_60.pth",
     # "gelatin":"package://dope/weights/gelatin_60.pth",
-    # "meat":"package://dope/weights/meat_20.pth",
-     "Mustard":"/root/catkin_ws/src/dope/weights/Mustard.pth",
+     "meat":"/root/catkin_ws/src/dope/weights/net_meat_shiny_14.pth",
+    # "Mustard":"/root/catkin_ws/src/dope/weights/Mustard.pth",
     #"soup":"package://dope/weights/soup_60.pth",
     #"sugar":"package://dope/weights/sugar_60.pth",
     # "bleach":"package://dope/weights/bleach_28_dr.pth"

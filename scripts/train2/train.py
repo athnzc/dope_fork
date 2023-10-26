@@ -385,6 +385,7 @@ nb_update_network = 0
 best_results = {"epoch":None,'passed':None,'add_mean':None,"add_std":None}
 
 scaler = torch.cuda.amp.GradScaler() 
+log = {}
 
 def _runnetwork(epoch,train_loader,train=True,syn=False):
     global nb_update_network
@@ -491,7 +492,7 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
 
         #save one output of the network and one gt
         # if False : 
-        if batch_idx == 0 : 
+        if batch_idx % opt.loginterval == 0 : 
 
             if train:
                 post = "train"
@@ -509,23 +510,31 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
                         dataformats="CWH",
                         )
 
+                    gt_save_folder = os.path.join(opt.outf, post+"_beliefs_gt", "epoch_"+str(epoch))
+                    if not os.path.exists(gt_save_folder):
+                        os.makedirs(gt_save_folder)
                     # belief maps gt
                     imgs = VisualizeBeliefMap(target_belief[i_output])
-                    img,grid = save_image(imgs, "some_img.png", 
-                        mean=0, std=1, nrow=3, save=False)
+                    img,grid = save_image(imgs, os.path.join(gt_save_folder, str(batch_idx)+".png"), 
+                        mean=0, std=1, nrow=3, save=True)
                     writer.add_image(f"{post}_belief_ground_truth_{i_output}",
                                 grid,
                                 epoch, 
                                 dataformats="CWH")
-
+                    
+                    print("Saving GT belief maps to", gt_save_folder)
+                    preds_save_folder = os.path.join(opt.outf, post+"_beliefs_preds", "epoch_"+str(epoch))
+                    if not os.path.exists(preds_save_folder):
+                        os.makedirs(preds_save_folder)
                     # belief maps guess
                     imgs = VisualizeBeliefMap(output_belief[-1][i_output])
-                    img,grid = save_image(imgs, "some_img.png", 
-                        mean=0, std=1, nrow=3, save=False)
+                    img,grid = save_image(imgs, os.path.join(preds_save_folder, str(batch_idx)+".png"), 
+                        mean=0, std=1, nrow=3, save=True)
                     writer.add_image(f"{post}_belief_guess_{i_output}",
                                 grid,
                                 epoch, 
                                 dataformats="CWH")
+                    print("Saving predicted belief maps to", preds_save_folder)
 
         if not train:
             # TODO look into using batchsize > 1 when the input data is 
@@ -593,6 +602,7 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             writer.add_scalar('loss/train_cls',np.mean(loss_avg_to_log["loss_class"]),epoch)
             writer.add_scalar('loss/train_aff',np.mean(loss_avg_to_log["loss_affinities"]),epoch)
             writer.add_scalar('loss/train_bel',np.mean(loss_avg_to_log["loss_belief"]),epoch)
+            log[str(epoch)+"_train"] = loss_avg_to_log
         else:
             # import pandas as pd
             # add the loss
@@ -601,6 +611,7 @@ def _runnetwork(epoch,train_loader,train=True,syn=False):
             writer.add_scalar('loss/test_cls',np.mean(loss_avg_to_log["loss_class"]),epoch)
             writer.add_scalar('loss/test_aff',np.mean(loss_avg_to_log["loss_affinities"]),epoch)
             writer.add_scalar('loss/test_bel',np.mean(loss_avg_to_log["loss_belief"]),epoch)
+            log[str(epoch)+"_test"] = loss_avg_to_log
 
 for epoch in range(1, opt.epochs + 1):
 
@@ -628,4 +639,13 @@ for epoch in range(1, opt.epochs + 1):
 if opt.local_rank == 0:
     torch.save(net.state_dict(), f'{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(2)}.pth')
 print ("end:" , datetime.datetime.now().time())
+
+log_save_folder = os.path.join(opt.outf, "log")
+if not os.path.exists(log_save_folder):
+    os.makedirs(log_save_folder)
+
+print("Saving log file to", log_save_folder)
+f = open(os.path.join(log_save_folder, "log_"+datetime.datetime.now().strftime("%Y%m%d_%H%M%S")+".json"), 'w')
+json.dump(log, f, indent=4)
+f.close()
 
