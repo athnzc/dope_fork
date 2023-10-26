@@ -12,5 +12,4 @@ scripts/nvisii_data_gen/output/dataset/
 datasets/
 scripts/train2/out_experiment
 preprocessing/output
-
-preprocessing/output
+outputs
