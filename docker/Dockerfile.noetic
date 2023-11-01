@@ -53,15 +53,17 @@ Pillow==8.1.1 \
 configparser==5.0.0 \
 natsort \
 absl-py
-
+#TODO: add boto3 module
 RUN python3 -m pip install torch torchvision
 RUN python3 -m pip install simplejson
 RUN python3 -m pip install tensorboardX opencv_python_headless==4.4.0.44 albumentations
 RUN python3 -m pip install --upgrade numpy
+RUN python3 -m pip install boto3
 # Setup catkin workspace
 ENV CATKIN_WS ${HOME}/catkin_ws
-COPY . ${CATKIN_WS}/src/dope
-COPY docker/init_workspace.sh ${HOME}
+#COPY . ${CATKIN_WS}/src/dope
+RUN mkdir -p ${CATKIN_WS}/src/dope/docker
+COPY docker/init_workspace.sh ${CATKIN_WS}/src/dope/docker
 RUN ${CATKIN_WS}/src/dope/docker/init_workspace.sh
 RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> ${HOME}/.bashrc
 
@@ -73,3 +75,4 @@ ENV TERM=xterm
 ENV QT_X11_NO_MITSHM 1
 
 ENV DOPE_ROOT ${HOME}/catkin_ws/src/dope
+RUN mkdir -p ${DOPE_ROOT}
