@@ -138,6 +138,7 @@ parser.add_argument('--data2', default=None, help='path to dataset2')
 parser.add_argument('--size1', default=None, help='size of dataset1 in percentage (0,1)')
 parser.add_argument('--size2', default=None, help='size of dataset2 in percentage (0,1)')
 parser.add_argument("--local-rank", default=0, type=int)
+parser.add_argument("--weight_save_freq", default=5, help="Save frequency of weights")
 
 # Read the config but do not overwrite the args written 
 args, remaining_argv = conf_parser.parse_known_args()
@@ -624,14 +625,16 @@ for epoch in range(1, opt.epochs + 1):
         _runnetwork(epoch,testingdata,train = False)
         if opt.data == "":
             break # lets get out of this if we are only testing
-    try:
-        if opt.local_rank == 0:
-            if not opt.dontsave is True:
-                torch.save(net.state_dict(), f'{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(2)}.pth')
-            else:
-                torch.save(net.state_dict(), f'{opt.outf}/net_{opt.namefile}.pth')
-    except:
-        pass
+    
+    if epoch % opt.weight_save_freq == 0:
+        try:
+            if opt.local_rank == 0:
+                if not opt.dontsave is True:
+                    torch.save(net.state_dict(), f'{opt.outf}/net_{opt.namefile}_{str(epoch).zfill(2)}.pth')
+                else:
+                    torch.save(net.state_dict(), f'{opt.outf}/net_{opt.namefile}.pth')
+        except:
+            pass
 
     if not opt.nbupdates is None and nb_update_network > int(opt.nbupdates):
         break
