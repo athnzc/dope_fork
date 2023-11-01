@@ -16,7 +16,9 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('data_folder', None, 'Path to data')
 flags.DEFINE_string('output_folder', None, 'output')
 flags.DEFINE_string('models_path', None, 'Path to PLY models')
-flags.DEFINE_strng('obj_map', None, 'Path to a json file with the mapping between the object IDs and the class names')
+flags.DEFINE_string('obj_map', None, 'Path to a json file with the mapping between the object IDs and the class names')
+flags.DEFINE_spaceseplist('scenes', None, 'Space-separated list of which scenes you want to process. Default will process all scenes')
+flags.DEFINE_integer('digits', 6, '')
 # def calculate_bbox(ply_model): using DOPE coordinate system
 
 #     x = ply_model['vertex']['x']
@@ -153,6 +155,7 @@ def main(argv):
     models = natsorted(glob.glob(FLAGS.models_path+"/*"))
     for p in models:
         with open(p, 'rb') as f:
+            logging.info('Reading model '+ p)
             model = PlyData.read(f)
 
     # with open(model_2_path, 'rb') as f:
@@ -168,12 +171,12 @@ def main(argv):
     image_names = {} # since all images from every scene need to be saved in a single folder, keep a mapping of the new image basenames to the original filepaths
     logging.info(folders)
 
-    num_images = 0
-    for s in folders:
-        images = natsorted(glob.glob(s+"/rgb/*"))
-        num_images = num_images + len(images)
+    # num_images = 0
+    # for s in folders:
+    #     images = natsorted(glob.glob(s+"/rgb/*"))
+    #     num_images = num_images + len(images)
 
-    logging.info('Total number of training images: ' +str(num_images))
+    # logging.info('Total number of training images: ' +str(num_images))
 
     if not os.path.exists(FLAGS.output_folder):
         logging.info('Creating output folder ' + FLAGS.output_folder)
@@ -185,7 +188,7 @@ def main(argv):
         #camera_data = read_json(camera_filepath)
         camera_data = np.reshape(np.array(read_json(camera_filepath)["0"]["cam_K"]), (3,3))
         logging.info('Loaded camera data from' + camera_filepath)
-        #print(camera_data)
+        logging.info(str(camera_data))
 
         gt_file = os.path.join(s, 'scene_gt.json')
         gt_data = read_json(gt_file)
@@ -218,7 +221,7 @@ def main(argv):
 
             obj_id = gt_data[key][0]["obj_id"]
             projected_cuboid = calculate_projected_cuboid(bb[obj_id-1], R_matrix, np.array(t_matrix), camera_data)
-            class_name = obj_map[obj_id]
+            class_name = obj_map[str(obj_id)]
             # if obj_id == 1:
             #     class_name = 'Makita_DFT_obj_id_1'
             #     projected_cuboid = calculate_projected_cuboid(bb1, R_matrix, np.array(t_matrix), camera_data)
@@ -239,7 +242,7 @@ def main(argv):
                             }
                         ]
                         }
-            new_img_basename = (len(str(num_images))-len(str(count)))*'0' + str(count)
+            new_img_basename = (len(str(FLAGS.digits))-len(str(count)))*'0' + str(count)
             new_img_path = os.path.join(FLAGS.output_folder, new_img_basename + ".png")
             logging.info('Copying '+path+' to '+new_img_path)
 
