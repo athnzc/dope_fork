@@ -71,3 +71,5 @@ ENV TERM=xterm
 ENV QT_X11_NO_MITSHM 1
 
 ENV DOPE_ROOT ${HOME}/catkin_ws/src/dope
+
+#TODO: Install wget, unzip, pyquaternion, nvisii, numpy==1.22, matplotlib, seaborn

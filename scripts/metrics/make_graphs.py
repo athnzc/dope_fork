@@ -7,7 +7,7 @@ import numpy as np
 import os 
 
 import glob
-
+import json 
 # load the data 
 # might be multiple datasets
 
@@ -70,7 +70,7 @@ sns.despine()
 
 plt.tight_layout()
 # sns.set(font_scale=1.1)
-
+results = []
 if opt.data_folder is not None:
     # load the data from the file
     adds_to_load = glob.glob(f"{opt.data_folder}/adds*")        
@@ -84,7 +84,10 @@ else:
     fig = plt.figure()
     ax = plt.axes()
 
-
+if opt.outf is not None:
+    if not os.path.exists(opt.outf):
+        os.makedirs(opt.outf)
+        
 for i_file, file in enumerate(adds_to_load):
     print(file)
     label = file.split("/")[-1]
@@ -120,6 +123,7 @@ for i_file, file in enumerate(adds_to_load):
     add_threshold_values = np.arange(0., opt.threshold, delta_threshold)
 
     counts = []
+    auc_val_thres = []
     for value in add_threshold_values:
         under_threshold = len(np.where(add_pnp_found <= value)[0])/n_pnp_possible_frames
         counts.append(under_threshold)
@@ -127,6 +131,7 @@ for i_file, file in enumerate(adds_to_load):
     for value in [0.02,0.04,0.06]:
         under_threshold = len(np.where(add_pnp_found <= value)[0])/n_pnp_possible_frames
         print('auc at ',value,':', under_threshold)
+        auc_val_thres.append({value:under_threshold})
     auc = np.trapz(counts, dx = delta_threshold)/opt.threshold
 
     # divide might screw this up .... to check!
@@ -135,6 +140,13 @@ for i_file, file in enumerate(adds_to_load):
     # print('mean', np.mean(add[np.where(add > pnp_sol_found_magic_number)]))
     # print('median',np.median(add[np.where(add > pnp_sol_found_magic_number)]))
     # print('std',np.std(add[np.where(add > pnp_sol_found_magic_number)]))
+    res = {'mean': add_pnp_found.mean(),
+               'std': add_pnp_found.std(),
+               'ratio': f'{len(add_pnp_found)}/{n_pnp_possible_frames}',
+               'auc_val_thres': auc_val_thres,
+               'auc': auc
+               }
+    results.append(res)
 
     cycle = plt.rcParams['axes.prop_cycle'].by_key()['color']
     if counts_dict is None:
@@ -203,10 +215,16 @@ if counts_dict is None:
         pass
     if opt.outf is None:
         plt.savefig(f'{opt.filename}.png')
+        with open(os.path.join('results.json'), 'w') as f:
+            json.dump(results, f, indent=4)
     else:
         plt.savefig(f'{opt.outf}/{opt.filename}.png')
+        with open(os.path.join(opt.outf, 'results.json'), 'w') as f:
+            json.dump(results, f, indent=4)
     if opt.show:
         plt.show()
     plt.close()
+
+
 
 

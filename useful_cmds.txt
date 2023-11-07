@@ -1,0 +1,2 @@
+python3 add_compute.py --data $DOPE_ROOT/scripts/metrics/data/table_ground_truth --data_prediction $DOPE_ROOT/scripts/metrics/data/table_dope_results --outf $DOPE_ROOT/outputs/experiment2/cracker --models $DOPE_ROOT/scripts/metrics/content --adds
+python3 inference.py --data $DOPE_ROOT/datasets/010_potted_meat_can --outf $DOPE_ROOT/outputs/experiment3

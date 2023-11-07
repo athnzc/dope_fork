@@ -29,7 +29,7 @@ from pyquaternion import Quaternion
 import pickle 
 import nvisii as visii 
 import subprocess 
-
+from natsort import natsorted
 
 
 parser = argparse.ArgumentParser()
@@ -220,14 +220,21 @@ def add_cuboid(name, debug=False):
 
 def get_models(path,suffix=""):
     models = {}
-    for folder in glob.glob(path+"/*/"):
+    for folder in natsorted(glob.glob(path+"/*/")):
 
+        print('folder', folder)
         model_name = folder.replace(path,"").replace('/',"")
         print('loading',model_name + suffix)
+        path_obj = folder + "/google_16k/textured.obj"
+        path_tex = folder + "/google_16k/texture_map_flat.png"
+        if not os.path.exists(path_obj):
+            path_obj = folder + "/textured.obj"
+        if not os.path.exists(path_tex):
+            path_tex = folder + "/texture_map.png"
         models[model_name] = create_obj(
             name = model_name + suffix,
-            path_obj = folder + "/google_16k/textured.obj",
-            path_tex = folder + "/google_16k/texture_map_flat.png",
+            path_obj = path_obj,
+            path_tex = path_tex,
             scale = 0.01
         )
         if opt.cuboid: 
@@ -236,6 +243,7 @@ def get_models(path,suffix=""):
         models[model_name].get_material().set_metallic(1)
         models[model_name].get_material().set_roughness(0.05)
 
+    print('models', models)
     return models
 
 
@@ -299,10 +307,12 @@ for gt_file in data_thruth:
     for obj in gt_json['objects']:
 
         name_gt = obj['class']
-
+        print(name_gt)
         # little hack from bug in the data
         if name_gt == '003':
             name_gt = "003_cracker_box_16k"
+        # if name_gt == '010':
+        #     name_gt = '010_potted_meat_can'
         objects_gt.append(
             [
                 name_gt,
@@ -323,11 +333,13 @@ for gt_file in data_thruth:
         )
         
         count_all_annotations += 1
-        
+        print('count', count_by_object)
         if name_gt in count_by_object: 
             count_by_object[name_gt] +=1 
+            print('count2', count_by_object)
         else:
             count_by_object[name_gt] = 1
+            print('count3', count_by_object)
 
     for obj_guess in gu_json['objects']:
 
@@ -384,13 +396,13 @@ for gt_file in data_thruth:
             name_gt, pose_mesh_gt = obj_gt
 
             # print(name_look_up,name_gt)
-
+            print('name look up', name_look_up)
             if name_look_up == name_gt:
                 candidates.append([i_obj_gt, pose_mesh_gt, name_gt])
 
         best_dist = 10000000000 
         best_index = -1 
-
+        print('CANDIDATES', candidates)
         for candi_gt in candidates:
             # compute the add
             i_gt, pose_gt, name_gt = candi_gt
@@ -416,6 +428,7 @@ for gt_file in data_thruth:
 
             
             if opt.adds:
+                #print('ALL GOOD')
                 if opt.cuboid:                                            
                     dist = 0
                     for i_p in range(9):
@@ -437,11 +450,12 @@ for gt_file in data_thruth:
                         dist += min(dist_s) 
 
                     dist /= 9
-                    print(dist)
+                    #print(dist)
                 else:
                     dist = []
                     dist2 = []
                     vertices = visii_gt.get_mesh().get_vertices()
+                    #print('vertices', vertices)
                     points_gt = []
                     points_gu = []
 
@@ -449,13 +463,15 @@ for gt_file in data_thruth:
                         v = visii.vec4(vertices[i][0],vertices[i][1],vertices[i][2],1)
                         p0 = visii_gt.get_transform().get_local_to_world_matrix() * v
                         p1 = visii_gu.get_transform().get_local_to_world_matrix() * v
+                        #print(p0)
                         points_gt.append([p0[0],p0[1],p0[2]])
                         points_gu.append([p1[0],p1[1],p1[2]])
 
+                    print(len(points_gt))
                     dist = np.mean(spatial.distance_matrix(
                                         np.array(points_gt), 
                                         np.array(points_gu),p=2).min(axis=1))
-
+                    #print('DIST', dist)
 
             else:
                 if opt.cuboid:                                            
@@ -486,16 +502,21 @@ for gt_file in data_thruth:
 
 
                     dist = np.mean(dist)
+                    
 
             if dist < best_dist:
                 best_dist = dist
                 best_index = i_gt
-
+        
+        print('INDEX', best_index)
+        print('best_dist', best_dist)
         if best_index != -1:
             if not name_guess in adds_objects.keys():
                  adds_objects[name_guess] = []
             adds_all.append(best_dist)
             adds_objects[name_guess].append(best_dist)
+            #print('best index', best_index)
+            print('HERE', adds_objects[name_guess])
 
 # save the data
 if len(opt.outf.split("/"))>1:
@@ -514,7 +535,9 @@ else:
         os.mkdir(opt.outf)
     except:
         pass
+
 print(adds_objects.keys())
+print('OBJECTS', adds_objects)
 count_by_object["all"] = count_all_annotations
 pickle.dump(count_by_object,open(f'{opt.outf}/count_all_annotations.p','wb'))
 pickle.dump(adds_all,open(f'{opt.outf}/adds_all.p','wb'))
@@ -526,6 +549,7 @@ pickle.dump(count_by_object,open(f'{opt.outf}/count_all_guesses.p','wb'))
 labels = []
 data = []
 for key in adds_objects.keys():
+    print('sdfghjhj', key)
     pickle.dump(adds_objects[key],open(f'{opt.outf}/adds_{key}.p','wb'))
     labels.append(key)
     data.append(f'{opt.outf}/adds_{key}.p')

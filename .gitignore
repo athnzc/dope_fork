@@ -13,3 +13,7 @@ scripts/nvisii_data_gen/output/dataset/
 scripts/train2/out_experiment
 preprocessing/output
 outputs
+3d_models
+scripts/metrics/content
+scripts/metrics/data
+scripts/metrics/results
