@@ -138,7 +138,7 @@ parser.add_argument('--data2', default=None, help='path to dataset2')
 parser.add_argument('--size1', default=None, help='size of dataset1 in percentage (0,1)')
 parser.add_argument('--size2', default=None, help='size of dataset2 in percentage (0,1)')
 parser.add_argument("--local-rank", default=0, type=int)
-parser.add_argument("--weight_save_freq", default=5, help="Save frequency of weights")
+parser.add_argument("--weight_save_freq", default=5, help="Frequency of saving the model weights. Default is every 5 epochs)")
 
 # Read the config but do not overwrite the args written 
 args, remaining_argv = conf_parser.parse_known_args()
