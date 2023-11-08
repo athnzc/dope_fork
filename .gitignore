@@ -17,3 +17,4 @@ outputs
 scripts/metrics/content
 scripts/metrics/data
 scripts/metrics/results
+scripts/train2/train_tmp/
