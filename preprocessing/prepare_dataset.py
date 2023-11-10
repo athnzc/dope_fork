@@ -75,7 +75,7 @@ def main(argv):
 
         for idx, image in enumerate(rgb_img):
             new_basename = (FLAGS.digits - len(str(count)))*'0'+str(count)
-            new_rgb_name = os.path.join(FLAGS.output_folder, new_basename+"_rgb.png")
+            new_rgb_name = os.path.join(FLAGS.output_folder, new_basename+".png")
 
             if os.path.splitext(image)[-1].split('.')[-1] not in ['png']: # if image extension is not png
                 convert_to_png(image, new_rgb_name)
