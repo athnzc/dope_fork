@@ -227,10 +227,10 @@ def get_models(path,suffix=""):
         print('loading',model_name + suffix)
         path_obj = folder + "/google_16k/textured.obj"
         path_tex = folder + "/google_16k/texture_map_flat.png"
-        if not os.path.exists(path_obj):
-            path_obj = folder + "/textured.obj"
+        # if not os.path.exists(path_obj):
+        #     path_obj = folder + "/google_16k/textured.obj"
         if not os.path.exists(path_tex):
-            path_tex = folder + "/texture_map.png"
+            path_tex = folder + "/google_16k/texture_map.png" # in case you don't have a flat texture 
         models[model_name] = create_obj(
             name = model_name + suffix,
             path_obj = path_obj,
@@ -301,7 +301,7 @@ for gt_file in data_thruth:
     with open(pred_scene) as json_file:
         gu_json = json.load(json_file)
 
-
+    print('gt:', gt_file, ',', 'gu:', pred_scene)
     objects_gt = [] #name obj, pose
 
     for obj in gt_json['objects']:
@@ -336,10 +336,10 @@ for gt_file in data_thruth:
         print('count', count_by_object)
         if name_gt in count_by_object: 
             count_by_object[name_gt] +=1 
-            print('count2', count_by_object)
+            #print('count2', count_by_object)
         else:
             count_by_object[name_gt] = 1
-            print('count3', count_by_object)
+            #print('count3', count_by_object)
 
     for obj_guess in gu_json['objects']:
 
@@ -361,9 +361,9 @@ for gt_file in data_thruth:
                 # * visii.angleAxis(1.57, visii.vec3(0,1,0))
                 ,
                 "position":visii.vec3(
-                    float(str(obj_guess['location'][0]))/100.0,
-                    float(str(obj_guess['location'][1]))/100.0,
-                    float(str(obj_guess['location'][2]))/100.0,
+                    float(str(obj_guess['location'][0])) / 100.0,
+                    float(str(obj_guess['location'][1])) / 100.0,
+                    float(str(obj_guess['location'][2])) / 100.0,
                 )
             }
         except:
@@ -396,13 +396,13 @@ for gt_file in data_thruth:
             name_gt, pose_mesh_gt = obj_gt
 
             # print(name_look_up,name_gt)
-            print('name look up', name_look_up)
+            #print('name look up', name_look_up)
             if name_look_up == name_gt:
                 candidates.append([i_obj_gt, pose_mesh_gt, name_gt])
 
         best_dist = 10000000000 
         best_index = -1 
-        print('CANDIDATES', candidates)
+        #print('CANDIDATES', candidates)
         for candi_gt in candidates:
             # compute the add
             i_gt, pose_gt, name_gt = candi_gt
@@ -508,15 +508,15 @@ for gt_file in data_thruth:
                 best_dist = dist
                 best_index = i_gt
         
-        print('INDEX', best_index)
-        print('best_dist', best_dist)
+        #print('INDEX', best_index)
+        #print('best_dist', best_dist)
         if best_index != -1:
             if not name_guess in adds_objects.keys():
                  adds_objects[name_guess] = []
             adds_all.append(best_dist)
             adds_objects[name_guess].append(best_dist)
             #print('best index', best_index)
-            print('HERE', adds_objects[name_guess])
+            #print('HERE', adds_objects[name_guess])
 
 # save the data
 if len(opt.outf.split("/"))>1:
