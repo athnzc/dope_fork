@@ -702,10 +702,10 @@ class ObjectDetector(object):
                         point = [candidate[0], candidate[1]]
 
                         # look at the distance to the vector field.
-                        print('point_int', point_int)
+                        #print('point_int', point_int)
                         #print('aff', aff[i_lists*2, ...])
-                        print(aff.size())
-                        print(aff[i_lists*2,point_int[1],point_int[0]].data.item())
+                        #print(aff.size())
+                        #print(aff[i_lists*2,point_int[1],point_int[0]].data.item())
                         v_aff = np.array([
                                         aff[i_lists*2, 
                                         point_int[1],
