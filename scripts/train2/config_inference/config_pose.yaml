@@ -6,7 +6,7 @@ downscale_height: 512     # if the input image is larger than this, scale it dow
 
 # Comment any of these lines to prevent detection / pose estimation of that object
 weights: {
-    # "cracker":"package://dope/weights/cracker_60.pth",
+    #"003_cracker_box_16k": "/root/catkin_ws/src/dope/weights/cracker_60.pth",
     # "gelatin":"package://dope/weights/gelatin_60.pth",
     # "meat":"package://dope/weights/meat_20.pth",
     # "mustard":"package://dope/weights/mustard_60.pth",
@@ -28,12 +28,13 @@ architectures: {
     'alphabet_soup':'resnet_simple',  
     'Mustard': "dope",
     "010": "dope",
+    "003_cracker_box_16k": "dope",
 }
 
 
 # Cuboid dimension in cm x,y,z
 dimensions: {
-    "cracker": [16.403600692749023,21.343700408935547,7.179999828338623],
+    "003_cracker_box_16k": [16.403600692749023,21.343700408935547,7.179999828338623],
     "gelatin": [8.918299674987793, 7.311500072479248, 2.9983000755310059],
     "010": [10.164673805236816,8.3542995452880859,5.7600898742675781], # meat
     "mustard": [9.6024150848388672,19.130100250244141,5.824894905090332],
@@ -49,7 +50,7 @@ dimensions: {
 }
 
 class_ids: {
-    "cracker": 1,
+    "003_cracker_box_16k": 1,
     "gelatin": 2,
     "010":    3,
     "mustard": 4,
@@ -64,7 +65,7 @@ class_ids: {
 }
 
 draw_colors: {
-    "cracker": [13, 255, 128],  # green
+    "003_cracker_box_16k": [13, 255, 128],  # green
     "gelatin": [255, 255, 255],  # while
     "010": [0, 104, 255],  # blue
     "mustard": [217,12, 232],  # magenta
@@ -99,7 +100,7 @@ meshes: {
 
 # optional: If the specified meshes are not in meters, provide a scale here (e.g. if the mesh is in centimeters, scale should be 0.01). default scale: 1.0.
 mesh_scales: {
-    "cracker": 0.01,
+    "003_cracker_box_16k": 0.01,
     "gelatin": 0.01,
     "010":    0.01,
     "mustard": 0.01,
