@@ -348,6 +348,7 @@ if __name__ == "__main__":
         for j in sorted(glob.glob(videopath+"/*.png")):
             imgs.append(j)
             imgsname.append(j.replace(videopath,"").replace("/",""))
+        print('Running inference on', len(imgs), 'samples')
     else:
         if not opt.realsense:
             cap = cv2.VideoCapture(0)
