@@ -361,9 +361,12 @@ for gt_file in data_thruth:
                 # * visii.angleAxis(1.57, visii.vec3(0,1,0))
                 ,
                 "position":visii.vec3(
-                    float(str(obj_guess['location'][0])) / 100.0,
-                    float(str(obj_guess['location'][1])) / 100.0,
-                    float(str(obj_guess['location'][2])) / 100.0,
+                    # float(str(obj_guess['location'][0])) / 100.0,
+                    # float(str(obj_guess['location'][1])) / 100.0,
+                    # float(str(obj_guess['location'][2])) / 100.0,
+                    float(str(obj_guess['location'][0])),
+                    float(str(obj_guess['location'][1])),
+                    float(str(obj_guess['location'][2])),
                 )
             }
         except:
