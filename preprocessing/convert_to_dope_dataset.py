@@ -151,6 +151,11 @@ def get_folders(scenes, data_folder):
 def main(argv):
     
     obj_map = read_json(FLAGS.obj_map)
+    for k in obj_map.keys():
+        class_folder = os.path.join(FLAGS.output_folder, obj_map[k])
+        if not os.path.exists(class_folder):
+            logging.info('Creating '+str(class_folder))
+            os.makedirs(class_folder)
     bb = []
     models = natsorted(glob.glob(FLAGS.models_path+"/*"))
     for p in models:
@@ -243,7 +248,7 @@ def main(argv):
                         ]
                         }
             new_img_basename = (len(str(FLAGS.digits))-len(str(count)))*'0' + str(count)
-            new_img_path = os.path.join(FLAGS.output_folder, new_img_basename + ".png")
+            new_img_path = os.path.join(FLAGS.output_folder, class_name, new_img_basename + ".png")
             logging.info('Copying '+path+' to '+new_img_path)
 
             image_names[new_img_basename] = path
@@ -252,7 +257,7 @@ def main(argv):
             shutil.copy2(path, new_img_path)
 
             #print('Annotation for image', rgb_img_paths[idx], ":", annotation)
-            annot_file = os.path.join(FLAGS.output_folder, new_img_basename + ".json")
+            annot_file = os.path.join(FLAGS.output_folder, class_name, new_img_basename + ".json")
             logging.info('Saving annotation file '+ annot_file)
             write_json(annot_file, annotation)
                 
