@@ -23,7 +23,7 @@ Check `models.py` as we are proposing different architectures.
 ### (update 23/10/2023) Additional comments
 Output json files include:
 - The field `camera_data` which contains the camera intrinsics (cx, cy, fx, fy) lifted from `camera_info.yml`, and the **original** dimensions (width, height) of the images the inference is ran on (during inference they are downscaled)
-- A list of the detected objects. For every object, the info saved is: the class name, location in camera system coordinates, rotation as a quaternion, and the coordinates of the projected cuboid (8 vertices + centroid). The projected cuboid is the result of the projection of the 3D cuboid using the camera matrix and the R,t estimated by the network. The output of the inference also includes visualizations of the projected cuboids on the images, as well as visualizations of the calculated belief maps.
+- A list of the detected objects. For every object, the info saved is: the class name, location in camera system coordinates (in meters), rotation as a quaternion, and the coordinates of the projected cuboid (8 vertices + centroid). The projected cuboid is the result of the projection of the 3D cuboid using the camera matrix and the R,t estimated by the network. The output of the inference also includes visualizations of the projected cuboids on the images, as well as visualizations of the calculated belief maps.
 
 **The inference algorithm in a nutshell:**
 - The DOPE network calculates the belief maps for the image currently processed
