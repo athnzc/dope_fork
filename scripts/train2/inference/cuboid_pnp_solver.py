@@ -72,7 +72,15 @@ class CuboidPNPSolver(object):
         cuboid3d_points = np.array(self._cuboid3d.get_vertices())
         obj_2d_points = []
         obj_3d_points = []
-
+#         cuboid3d_points = np.array([[  79.49984741  ,124.2697525   ,-37.09790039],
+#  [  79.49984741 , 124.2697525   , 37.09790039],
+#  [ -79.49984741 , 124.2697525   , 37.09790039],
+#  [ -79.49984741 , 124.2697525   ,-37.09790039],
+#  [  79.49984741 ,-124.2697525   ,-37.09790039],
+#  [  79.49984741 ,-124.2697525    ,37.09790039],
+#  [ -79.49984741 ,-124.2697525    ,37.09790039],
+#  [ -79.49984741 ,-124.2697525   ,-37.09790039],
+#  [  18.61763246  ,  6.76022065    ,1.25508838]] ).reshape(-1,3)
         for i in range(CuboidVertexType.TotalVertexCount):
             check_point_2d = cuboid2d_points[i]
             # Ignore invalid points
@@ -82,8 +90,10 @@ class CuboidPNPSolver(object):
             obj_3d_points.append(cuboid3d_points[i])
 
         obj_2d_points = np.array(obj_2d_points, dtype=float)
+        print('########obj_2d_points', obj_2d_points)
         obj_3d_points = np.array(obj_3d_points, dtype=float)
-
+        print('########## obj 3d points', obj_3d_points)
+        print('#### cuboid 3d points', cuboid3d_points)
         valid_point_count = len(obj_2d_points)
 
         # Can only do PNP if we have more than 3 valid points

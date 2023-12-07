@@ -25,6 +25,13 @@ from detector import ModelData, ObjectDetector
 import simplejson as json
 import copy
 
+class CoordSystem():
+    def __init__(self, forward, up, right):
+        self.forward = forward
+        self.up = up
+        self.right = right 
+        #self.center = center
+
 class Draw(object):
     """Drawing helper class to visualize the neural network output"""
 
@@ -116,6 +123,7 @@ class DopeNode(object):
         self.config_detect.sigma = config['sigma']
         self.config_detect.thresh_points = config["thresh_points"]
 
+        
         # For each object to detect, load network model, create PNP solver, and start ROS publishers
         print(config['weights'])
         for model in config['weights']:
@@ -206,12 +214,13 @@ class DopeNode(object):
         }
         for m in self.models:
             # Detect object
-            results, beliefs = ObjectDetector.detect_object_in_image(
+            results, beliefs, beliefs_list, beliefs_pure_list = ObjectDetector.detect_object_in_image(
                 self.models[m].net,
                 self.pnp_solvers[m],
                 img,
                 self.config_detect,
-                make_belief_debug_img=True
+                make_belief_debug_img=True,
+                overlay_image = True
             )
             # print(results)
             # print('---')
@@ -262,7 +271,40 @@ class DopeNode(object):
         with open(f"{output_folder}/{img_name.replace('png','json')}", 'w') as fp:
             json.dump(dict_out, fp, indent=4)
 
-            
+        #print('BELIEFS')
+        #print(beliefs_list)
+        save_img_list(beliefs_list, output_folder, img_name)
+        overlay_beliefs(img, beliefs_pure_list, output_folder, img_name)
+
+def save_img_list(img_list, output_folder, img_name):
+    #mul(std).add(mean).mul(255).byte().transpose(0,2).transpose(0,1).numpy() mean=0, std = 1
+    for i, im in enumerate(img_list):
+        #print(im.shape)
+        im_t = np.uint8(im * 255)
+        im_t = np.transpose(im_t, (1,2,0))
+        im_copy = Image.fromarray(im_t)
+        im_copy.save(f"{output_folder}/{img_name[:img_name.rfind('.')]}_belief_{i}.png")
+
+def overlay_beliefs(in_img, img_list, output_folder, img_name):
+    final_img = np.zeros(in_img.shape)
+    for i, im in enumerate(img_list):
+        #print(im.shape)
+        #im_t = np.uint8(im * 255)
+        final_img = final_img + np.transpose(im, (1,2,0))
+    
+    overlay_img = np.uint8(final_img * 255 + 20)
+    #print(type(overlay_img))
+    #overlay_img = cv2.equalizeHist(overlay_img)
+    overlay_img = Image.fromarray(overlay_img)
+    overlay_img = overlay_img.convert("RGBA")
+    bg_img = Image.fromarray(in_img)
+    bg_img = bg_img.convert("RGBA")
+    blended = Image.blend(bg_img, overlay_img, 0.7)
+    overlay_img.save(f"{output_folder}/{img_name[:img_name.rfind('.')]}_overlay.png")
+    bg_img.save(f"{output_folder}/{img_name[:img_name.rfind('.')]}_bg.png")
+    blended.save(f"{output_folder}/{img_name[:img_name.rfind('.')]}_blended.png")
+
+
 
 def rotate_vector(vector, quaternion):
     q_conj = tf.transformations.quaternion_conjugate(quaternion)
@@ -311,9 +353,10 @@ if __name__ == "__main__":
     # load the configs
     with open(opt.config) as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
+        print('!!!!CONFIG POSE', config)
     with open(opt.camera) as f:
         camera_info = yaml.load(f, Loader=yaml.FullLoader)
-    
+        print('!!! CAMERA CONFIG', camera_info)
     # setup the realsense
     if opt.realsense:
         import pyrealsense2 as rs

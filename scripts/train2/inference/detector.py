@@ -36,7 +36,7 @@ from scipy import optimize
 import sys 
 sys.path.append("../")
 from models import * 
-
+import copy 
 # Import the definition of the neural network model and cuboids
 from cuboid_pnp_solver import *
 
@@ -416,7 +416,6 @@ class ObjectDetector(object):
         out, seg = net_model(image_torch)
         vertex2 = out[-1][0]
         aff = seg[-1][0]
-
         # Find objects from network output
         detected_objects = ObjectDetector.find_object_poses(vertex2, aff, pnp_solver, config)
 
@@ -426,6 +425,7 @@ class ObjectDetector(object):
             # Run the belief maps debug display on the belief maps
             tensor = vertex2
             belief_imgs = []
+            belief_pure_imgs = []
             if overlay_image:
                 upsampling = nn.UpsamplingNearest2d(size=in_img.shape[:2])
                 in_img = (torch.tensor(in_img).float() / 255.0)
@@ -440,11 +440,16 @@ class ObjectDetector(object):
                 belief = torch.clamp(belief, 0, 1).cpu()
                 if overlay_image:
                     belief = upsampling(belief.unsqueeze(0).unsqueeze(0)).squeeze().squeeze().data
+                    belief_pure = torch.cat([belief.unsqueeze(0),
+                        belief.unsqueeze(0),
+                        belief.unsqueeze(0)]).unsqueeze(0)
                     belief = torch.cat([
                         belief.unsqueeze(0) + in_img[:, :, 0],
                         belief.unsqueeze(0) + in_img[:, :, 1],
                         belief.unsqueeze(0) + in_img[:, :, 2]
                     ]).unsqueeze(0)
+
+                    belief_pure = torch.clamp(belief_pure, 0, 1)
                     belief = torch.clamp(belief, 0, 1)
                 else:
                     belief = torch.cat([
@@ -453,14 +458,17 @@ class ObjectDetector(object):
                         belief.unsqueeze(0)
                     ]).unsqueeze(0)
                 belief_imgs.append(belief.data.squeeze().numpy())
-
+                belief_pure_imgs.append(belief_pure.data.squeeze().numpy())
+                belief_imgs_list = copy.deepcopy(belief_imgs)
+                #beliefs_pure_list = copy.deepcopy(belief_pure_imgs)
             # Create the image grid
             belief_imgs = torch.tensor(np.array(belief_imgs))
 
             im_belief = ObjectDetector.get_image_grid(belief_imgs, None,
                 mean=0, std=1)
 
-            return detected_objects, im_belief
+            return detected_objects, im_belief, belief_imgs_list, belief_pure_imgs
+
 
 
             
@@ -481,10 +489,12 @@ class ObjectDetector(object):
         #print("find_object_poses:  found {} objects ================".format(len(objects)))
         for obj in objects:
             # Run PNP
+            
             points = obj[1] + [(obj[0][0]*scale_factor, obj[0][1]*scale_factor)]
+            print('points find object pose', points)
             cuboid2d = np.copy(points)
             location, quaternion, projected_points = pnp_solver.solve_pnp(points)
-
+            print('***projected points', projected_points)
             # run multiple sample
             if run_sampling:
                 lx,ly,lz = [],[],[]
@@ -578,9 +588,10 @@ class ObjectDetector(object):
                                     map > config.thresh_map)
                                 )
             peaks = zip(np.nonzero(peaks_binary)[1], np.nonzero(peaks_binary)[0]) 
-            
+            #print('!!!!PEAKS', peaks)
             # Computing the weigthed average for localizing the peaks
             peaks = list(peaks)
+            print('****PEAKS', len(peaks))
             win = 11
             ran = win//2
             peaks_avg = []
@@ -642,19 +653,20 @@ class ObjectDetector(object):
             peak_counter += peaks_len
 
         objects = []
-
+        #print(len(all_peaks))
+        #aff = None
         if aff is None:
             # Assume there is only one object 
             points = [None for i in range(numvertex)]
+            print(len(points))
             for i_peak, peaks in enumerate(all_peaks):
                 # print (peaks)
                 for peak in peaks:
                     if peak[2] > config.threshold:
                         points[i_peak] = (peak[0],peak[1])
+            
 
-            return points 
-
-
+        #print("\n************AFF IS not NONE*******************\n")
         # Check object centroid and build the objects if the centroid is found
         for nb_object in range(len(all_peaks[-1])):
             if all_peaks[-1][nb_object][2] > config.thresh_points:
@@ -671,14 +683,19 @@ class ObjectDetector(object):
                     # add the samples to the object centroids 
                     objects[nb_object][4][-1] = all_samples[-1][nb_object]
 
-
+        print('num of candidate objects', len(objects))
+        #print('objects', objects)
         # Working with an output that only has belief maps
+       
         if aff is None:
             if len (objects) > 0 and len(all_peaks)>0 and len(all_peaks[0])>0:
                 for i_points in range(8):
                     if  len(all_peaks[i_points])>0 and all_peaks[i_points][0][2] > config.threshold:
                         objects[0][1][i_points] = (all_peaks[i_points][0][0], all_peaks[i_points][0][1])
+                        #print(objects)
+                        
         else:
+            #print('\n!!!!!!!!PEAKS\n', all_peaks)
             # For all points found
             for i_lists in range(len(all_peaks[:-1])):
                 lists = all_peaks[i_lists]
@@ -695,7 +712,7 @@ class ObjectDetector(object):
                     # Find the points that links to that centroid. 
                     for i_obj in range(len(objects)):
                         center = [objects[i_obj][0][0], objects[i_obj][0][1]]
-
+                        print('!!CENTER', center)
                         # integer is used to look into the affinity map, 
                         # but the float version is used to run 
                         point_int = [int(candidate[0]), int(candidate[1])]
@@ -737,7 +754,7 @@ class ObjectDetector(object):
                         v_center = np.concatenate([[xvec],[yvec]])
                         
                         # vector affinity
-                        dist_angle = np.linalg.norm(v_center - v_aff)
+                        dist_angle = np.linalg.norm(v_center - v_aff) # returns the Euclidean distance of the two vectors
 
                         # distance between vertexes
                         dist_point = np.linalg.norm(np.array(point) - np.array(center))
@@ -757,6 +774,7 @@ class ObjectDetector(object):
                             or best_angle < config.thresh_angle \
                             and best_dist < objects[i_best][2][i_lists][1]:
                         # set the points 
+                        #print('*****objects', objects)
                         objects[i_best][1][i_lists] = ((candidate[0])*scale_factor, (candidate[1])*scale_factor)
                         # set information about the points: angle and distance
                         objects[i_best][2][i_lists] = (best_angle, best_dist)
