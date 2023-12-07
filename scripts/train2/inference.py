@@ -135,11 +135,11 @@ class DopeNode(object):
                 self.draw_colors[model] = (0,255,0)
             self.dimensions[model] = tuple(config["dimensions"][model])
             self.class_ids[model] = config["class_ids"][model]
-
+            center = np.array([1.861763246, 0.676022065, 0.125508838])
             self.pnp_solvers[model] = \
                 CuboidPNPSolver(
                     model,
-                    cuboid3d=Cuboid3d(config['dimensions'][model])
+                    cuboid3d=Cuboid3d(size3d = config['dimensions'][model], center_location = center)
                 )
 
 

@@ -18,3 +18,6 @@ scripts/metrics/content
 scripts/metrics/data
 scripts/metrics/results
 scripts/train2/train_tmp/
+scripts/train2/test
+*.whl
+scripts/metrics/*.png
