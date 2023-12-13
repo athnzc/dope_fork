@@ -22,6 +22,27 @@ class CuboidVertexType(IntEnum):
     TotalCornerVertexCount = 8 # Corner vertexes doesn't include the center point
     TotalVertexCount = 9
 
+                #     [right, top, rear],    # Front Top Right
+                # [right, top, front],     # Front Top Left
+                # [left, top, front],  # Front Bottom Left
+                # [left, top, rear], # Front Bottom Right
+                # [right, bottom, rear],     # Rear Top Right
+                # [right, bottom, front],      # Rear Top Left
+                # [left, bottom, front],   # Rear Bottom Left
+                # [left, bottom, rear],  # Rear Bottom Right  # Center
+# class CuboidVertexType(IntEnum):
+#     RearTopRight = 0
+#     FrontTopRight = 1
+#     FrontTopLeft = 2
+#     RearTopLeft = 3
+#     RearBottomRight = 4
+#     FrontBottomRight = 5
+#     FrontBottomLeft = 6
+#     RearBottomLeft = 7
+#     Center = 8
+#     TotalCornerVertexCount = 8 # Corner vertexes doesn't include the center point
+#     TotalVertexCount = 9
+
 # List of the vertex indexes in each line edges of the cuboid
 CuboidLineIndexes = [
     # Front face
@@ -77,31 +98,58 @@ class Cuboid3d():
     def generate_vertexes(self):
         width, height, depth = self.size3d
 
-        # By default just use the normal OpenCV coordinate system
+        # # By default just use the normal OpenCV coordinate system
+        # if (self.coord_system is None):
+        #     cx, cy, cz = self.center_location
+        #     # X axis point to the right
+        #     right = cx + width / 2.0
+        #     left = cx - width / 2.0
+        #     # Y axis point downward
+        #     top = cy - height / 2.0
+        #     bottom = cy + height / 2.0
+        #     # Z axis point forward
+        #     front = cz + depth / 2.0
+        #     rear = cz - depth / 2.0
+
+        #     # List of 8 vertices of the box       
+        #     self._vertices = [
+        #         [right, top, front],    # Front Top Right
+        #         [left, top, front],     # Front Top Left
+        #         [left, bottom, front],  # Front Bottom Left
+        #         [right, bottom, front], # Front Bottom Right
+        #         [right, top, rear],     # Rear Top Right
+        #         [left, top, rear],      # Rear Top Left
+        #         [left, bottom, rear],   # Rear Bottom Left
+        #         [right, bottom, rear],  # Rear Bottom Right
+        #         self.center_location,   # Center
+        #     ]
+
         if (self.coord_system is None):
+            print('COORD SYSTEM IS NONE')
             cx, cy, cz = self.center_location
             # X axis point to the right
             right = cx + width / 2.0
             left = cx - width / 2.0
             # Y axis point downward
-            top = cy - height / 2.0
-            bottom = cy + height / 2.0
+            top = cy + height / 2.0
+            bottom = cy - height / 2.0
             # Z axis point forward
             front = cz + depth / 2.0
             rear = cz - depth / 2.0
 
             # List of 8 vertices of the box       
             self._vertices = [
-                [right, top, front],    # Front Top Right
-                [left, top, front],     # Front Top Left
-                [left, bottom, front],  # Front Bottom Left
-                [right, bottom, front], # Front Bottom Right
-                [right, top, rear],     # Rear Top Right
-                [left, top, rear],      # Rear Top Left
-                [left, bottom, rear],   # Rear Bottom Left
-                [right, bottom, rear],  # Rear Bottom Right
-                self.center_location,   # Center
+                [right, top, rear],    # Front Top Right
+                [right, top, front],     # Front Top Left
+                [left, top, front],  # Front Bottom Left
+                [left, top, rear], # Front Bottom Right
+                [right, bottom, rear],     # Rear Top Right
+                [right, bottom, front],      # Rear Top Left
+                [left, bottom, front],   # Rear Bottom Left
+                [left, bottom, rear],  # Rear Bottom Right  # Center
+                self.center_location,
             ]
+
         else:
             sx, sy, sz = self.size3d
             forward = np.array(self.coord_system.forward, dtype=float) * sy * 0.5

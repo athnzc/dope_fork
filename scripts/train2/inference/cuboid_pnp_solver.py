@@ -70,6 +70,7 @@ class CuboidPNPSolver(object):
         projected_points = cuboid2d_points
 
         cuboid3d_points = np.array(self._cuboid3d.get_vertices())
+        print('!!!!!!!!!!!!!!!CUBOID 3D GET VERTICES',  cuboid3d_points)
         obj_2d_points = []
         obj_3d_points = []
 #         cuboid3d_points = np.array([[  79.49984741  ,124.2697525   ,-37.09790039],
@@ -81,13 +82,17 @@ class CuboidPNPSolver(object):
 #  [ -79.49984741 ,-124.2697525    ,37.09790039],
 #  [ -79.49984741 ,-124.2697525   ,-37.09790039],
 #  [  18.61763246  ,  6.76022065    ,1.25508838]] ).reshape(-1,3)
+        print('!!!RANGE', CuboidVertexType.TotalVertexCount.value)
         for i in range(CuboidVertexType.TotalVertexCount):
+            
             check_point_2d = cuboid2d_points[i]
+            print('2D POINT', check_point_2d)
             # Ignore invalid points
             if (check_point_2d is None):
                 continue
             obj_2d_points.append(check_point_2d)
             obj_3d_points.append(cuboid3d_points[i])
+            print('3D', cuboid3d_points[i], '-> 2D', check_point_2d)
 
         obj_2d_points = np.array(obj_2d_points, dtype=float)
         print('########obj_2d_points', obj_2d_points)
@@ -111,6 +116,7 @@ class CuboidPNPSolver(object):
 
             if ret:
                 location = list(x[0] for x in tvec)
+                print('IF RET', tvec,'\n', location)
                 quaternion = self.convert_rvec_to_quaternion(rvec)
                 
                 projected_points, _ = cv2.projectPoints(cuboid3d_points, rvec, tvec, self._camera_intrinsic_matrix, self._dist_coeffs)
@@ -119,6 +125,7 @@ class CuboidPNPSolver(object):
                 # If the location.Z is negative or object is behind the camera then flip both location and rotation
                 x, y, z = location
                 if z < 0:
+                    print('!!!!!!!!!Z<0')
                     # Get the opposite location
                     location = [-x, -y, -z]
 

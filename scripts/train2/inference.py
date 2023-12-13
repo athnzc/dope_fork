@@ -144,10 +144,13 @@ class DopeNode(object):
             self.dimensions[model] = tuple(config["dimensions"][model])
             self.class_ids[model] = config["class_ids"][model]
             center = np.array([1.861763246, 0.676022065, 0.125508838])
+            #coord = CoordSystem(forward=[0,1,0], up=[0,0,1], right=[1,0,0])
+            coord = None
+            center = [0,0,0]
             self.pnp_solvers[model] = \
                 CuboidPNPSolver(
                     model,
-                    cuboid3d=Cuboid3d(size3d = config['dimensions'][model], center_location = center)
+                    cuboid3d=Cuboid3d(config['dimensions'][model])
                 )
 
 
@@ -273,8 +276,8 @@ class DopeNode(object):
 
         #print('BELIEFS')
         #print(beliefs_list)
-        save_img_list(beliefs_list, output_folder, img_name)
-        overlay_beliefs(img, beliefs_pure_list, output_folder, img_name)
+        #save_img_list(beliefs_list, output_folder, img_name)
+        #overlay_beliefs(img, beliefs_pure_list, output_folder, img_name)
 
 def save_img_list(img_list, output_folder, img_name):
     #mul(std).add(mean).mul(255).byte().transpose(0,2).transpose(0,1).numpy() mean=0, std = 1
