@@ -48,7 +48,8 @@ def main(argv):
     plt.plot(epochs, values, 'o')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.show()
+    #plt.show()
+    plt.savefig(os.path.join(FLAGS.out, 'figures', 'plot.png'))
     
     
     #logging.info(str(epochs))
