@@ -17,3 +17,7 @@ outputs
 scripts/train2/train_tmp
 useful_cmds.txt
 .vscode
+scripts/train2/test*
+scripts/train2/train_experiment25
+scripts/metrics/*.png
+*.whl
