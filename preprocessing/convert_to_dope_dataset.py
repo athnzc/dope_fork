@@ -125,7 +125,7 @@ def vec2quat(rot):
 
 # get image id from image name as string to use as key for dictionary lookup
 def get_image_id(img_path):
-    return str(int(os.path.splitext(os.path.basename(img_path))[0]))
+    return os.path.splitext(os.path.basename(img_path))[0]
 
 def get_folders(scenes, data_folder):
     if scenes is None:    
@@ -190,9 +190,12 @@ def main(argv):
 
     count = 0
     for s in folders:
+        #import pdb; pdb.set_trace()
         camera_filepath = os.path.join(s, 'scene_camera.json')
         #camera_data = read_json(camera_filepath)
-        camera_data = np.reshape(np.array(read_json(camera_filepath)["0"]["cam_K"]), (3,3))
+        camera_data_raw = read_json(camera_filepath)
+        cam_key = [*camera_data_raw.keys()][0] # unpack keys dictionary to a list and get first element 
+        camera_data = np.reshape(np.array(camera_data_raw[cam_key]["cam_K"]), (3,3)) 
         logging.info('Loaded camera data from' + camera_filepath)
         logging.info(str(camera_data))
 
@@ -218,6 +221,8 @@ def main(argv):
             key = get_image_id(path)
             logging.info('key'+ str(key))
             #import pdb; pdb.set_trace()
+            if key not in gt_data.keys(): # to cover edge case where the key is of the form eg "000001" i.e. same as image base name and not "1"
+                key = str(int(key))
             for i, object in enumerate(gt_data[key]):
                 R_matrix = np.reshape(np.array(object["cam_R_m2c"]), (3,3))
                 logging.info('R'+ str(R_matrix))
@@ -241,7 +246,11 @@ def main(argv):
                 #     class_name = 'Windows_control_panel_1_obj_id_2'
                 #     projected_cuboid = calculate_projected_cuboid(bb2, R_matrix, np.array(t_matrix), camera_data)
 
-                visibility = gt_info_data[key][i]["visib_fract"]
+                if key not in gt_info_data.keys(): # to cover edge case where the key is of the form eg "000001" i.e. same as image base name and not "1"
+                    info_key = str(int(key))
+                else:
+                    info_key = key
+                visibility = gt_info_data[info_key][i]["visib_fract"]
                 object_list.append({
                                 "class": class_name,
                                 "visibility": visibility,
