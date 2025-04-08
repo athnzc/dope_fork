@@ -13,11 +13,11 @@ from absl import flags, logging, app
 _ZEROANGLES=1E-10
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('data_folder', None, 'Path to data')
+flags.DEFINE_string('data_folder', None, 'Path to dataset. The script expects a folder with scene subfolders.')
 flags.DEFINE_string('output_folder', None, 'output')
 flags.DEFINE_string('models_path', None, 'Path to PLY models')
 flags.DEFINE_string('obj_map', None, 'Path to a json file with the mapping between the object IDs and the class names')
-flags.DEFINE_spaceseplist('scenes', None, 'Space-separated list of which scenes you want to process. Default will process all scenes')
+flags.DEFINE_spaceseplist('scenes', None, 'Space-separated list of which scenes you want to process. Default will process all scenes. E.g --scenes "000001 000005"')
 flags.DEFINE_integer('digits', 6, '')
 # def calculate_bbox(ply_model): using DOPE coordinate system
 
@@ -133,6 +133,7 @@ def get_folders(scenes, data_folder):
     else:
         folders = []
         scenes = natsorted(scenes)
+        #import pdb; pdb.set_trace
         for s in scenes:
             
             logging.info(s)
@@ -151,13 +152,13 @@ def get_folders(scenes, data_folder):
 def main(argv):
     
     obj_map = read_json(FLAGS.obj_map)
-    for k in obj_map.keys():
-        class_folder = os.path.join(FLAGS.output_folder, obj_map[k])
-        if not os.path.exists(class_folder):
-            logging.info('Creating '+str(class_folder))
-            os.makedirs(class_folder)
+    # for k in obj_map.keys():
+    #     class_folder = os.path.join(FLAGS.output_folder, obj_map[k])
+    #     if not os.path.exists(class_folder):
+    #         logging.info('Creating '+str(class_folder))
+    #         os.makedirs(class_folder)
     bb = []
-    models = natsorted(glob.glob(FLAGS.models_path+"/*"))
+    models = natsorted(glob.glob(FLAGS.models_path+"/*.ply"))
     for p in models:
         with open(p, 'rb') as f:
             logging.info('Reading model '+ p)
@@ -204,51 +205,57 @@ def main(argv):
         gt_info_file = os.path.join(s, 'scene_gt_info.json')
         gt_info_data = read_json(gt_info_file)
         logging.info('Loaded GT info data from' + gt_info_file)
-
+        scene_id = os.path.splitext(s)[0].split("/")[-1]
+        out_scene = os.path.join(FLAGS.output_folder, scene_id) 
+        logging.info("Creating output scene folder")
+        os.makedirs(out_scene)
         #print(gt_info_data)
 
         rgb_img_paths = natsorted(glob.glob(s+"/rgb/*"))
         for path in rgb_img_paths:
             #print(idx, key)
+            object_list = []
             key = get_image_id(path)
             logging.info('key'+ str(key))
-            R_matrix = np.reshape(np.array(gt_data[key][0]["cam_R_m2c"]), (3,3))
-            logging.info('R'+ str(R_matrix))
-            rotation_vector,_ = cv.Rodrigues(R_matrix)
-            quaternion = vec2quat(rotation_vector)
-            #print('quaternion', quaternion)
+            import pdb; pdb.set_trace()
+            for i, object in enumerate(gt_data[key]):
+                R_matrix = np.reshape(np.array(object["cam_R_m2c"]), (3,3))
+                logging.info('R'+ str(R_matrix))
+                rotation_vector,_ = cv.Rodrigues(R_matrix)
+                quaternion = vec2quat(rotation_vector)
+                #print('quaternion', quaternion)
 
-            t_matrix = gt_data[key][0]["cam_t_m2c"]
-            logging.info('t matrix'+str(t_matrix))
-            #translation_vector,_ = cv.Rodrigues(t_matrix)
+                t_matrix = object["cam_t_m2c"]
+                logging.info('t matrix'+str(t_matrix))
+                #translation_vector,_ = cv.Rodrigues(t_matrix)
 
-            #print('translation vector', translation_vector)
+                #print('translation vector', translation_vector)
 
-            obj_id = gt_data[key][0]["obj_id"]
-            projected_cuboid = calculate_projected_cuboid(bb[obj_id-1], R_matrix, np.array(t_matrix), camera_data)
-            class_name = obj_map[str(obj_id)]
-            # if obj_id == 1:
-            #     class_name = 'Makita_DFT_obj_id_1'
-            #     projected_cuboid = calculate_projected_cuboid(bb1, R_matrix, np.array(t_matrix), camera_data)
-            # elif obj_id == 2:
-            #     class_name = 'Windows_control_panel_1_obj_id_2'
-            #     projected_cuboid = calculate_projected_cuboid(bb2, R_matrix, np.array(t_matrix), camera_data)
+                obj_id = object["obj_id"]
+                projected_cuboid = calculate_projected_cuboid(bb[obj_id-1], R_matrix, np.array(t_matrix), camera_data)
+                class_name = obj_map[str(obj_id)]
+                # if obj_id == 1:
+                #     class_name = 'Makita_DFT_obj_id_1'
+                #     projected_cuboid = calculate_projected_cuboid(bb1, R_matrix, np.array(t_matrix), camera_data)
+                # elif obj_id == 2:
+                #     class_name = 'Windows_control_panel_1_obj_id_2'
+                #     projected_cuboid = calculate_projected_cuboid(bb2, R_matrix, np.array(t_matrix), camera_data)
 
-            visibility = gt_info_data[key][0]["visib_fract"]
-
-            annotation = {"camera_data": {},
-                        "objects": [
-                            {
+                visibility = gt_info_data[key][i]["visib_fract"]
+                object_list.append({
                                 "class": class_name,
                                 "visibility": visibility,
                                 "location": t_matrix, 
                                 "quaternion_xyzw": quaternion.tolist(),
                                 "projected_cuboid": projected_cuboid #should be a list of vertices
-                            }
-                        ]
+                            })
+            annotation = {"camera_data": {},
+                        "objects": object_list
                         }
+            
+            #import pdb; pdb.set_trace()
             new_img_basename = (len(str(FLAGS.digits))-len(str(count)))*'0' + str(count)
-            new_img_path = os.path.join(FLAGS.output_folder, class_name, new_img_basename + ".png")
+            new_img_path = os.path.join(out_scene, new_img_basename + ".png")
             logging.info('Copying '+path+' to '+new_img_path)
 
             image_names[new_img_basename] = path
@@ -257,7 +264,7 @@ def main(argv):
             shutil.copy2(path, new_img_path)
 
             #print('Annotation for image', rgb_img_paths[idx], ":", annotation)
-            annot_file = os.path.join(FLAGS.output_folder, class_name, new_img_basename + ".json")
+            annot_file = os.path.join(out_scene, new_img_basename + ".json")
             logging.info('Saving annotation file '+ annot_file)
             write_json(annot_file, annotation)
                 
