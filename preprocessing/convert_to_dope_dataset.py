@@ -217,7 +217,7 @@ def main(argv):
             object_list = []
             key = get_image_id(path)
             logging.info('key'+ str(key))
-            import pdb; pdb.set_trace()
+            #import pdb; pdb.set_trace()
             for i, object in enumerate(gt_data[key]):
                 R_matrix = np.reshape(np.array(object["cam_R_m2c"]), (3,3))
                 logging.info('R'+ str(R_matrix))
