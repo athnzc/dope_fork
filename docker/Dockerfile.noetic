@@ -58,8 +58,9 @@ RUN python3 -m pip install torch torchvision
 RUN python3 -m pip install simplejson
 # Setup catkin workspace
 ENV CATKIN_WS ${HOME}/catkin_ws
-COPY . ${CATKIN_WS}/src/dope
-COPY docker/init_workspace.sh ${HOME}
+#COPY . ${CATKIN_WS}/src/dope
+RUN mkdir -p ${HOME}${CATKIN_WS}/src/dope/docker
+COPY docker/init_workspace.sh ${CATKIN_WS}/src/dope/docker/init_workspace.sh
 RUN ${CATKIN_WS}/src/dope/docker/init_workspace.sh
 RUN echo "source ${CATKIN_WS}/devel/setup.bash" >> ${HOME}/.bashrc
 
